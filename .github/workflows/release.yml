@@ -42,16 +42,15 @@ jobs:
       - name: Configure registry auth
         run: |
           set -euo pipefail
-          HTTP_STATUS=$(curl -s -o /tmp/verdaccio-login.json -w '%{http_code}' \
-            -X PUT \
-            -H "Content-Type: application/json" \
+          TOKEN=$(curl -s -u "${{ secrets.REGISTRY_USER }}:${{ secrets.REGISTRY_PASSWORD }}" \
+            -X PUT "http://10.10.0.3:4873/-/user/org.couchdb.user:${{ secrets.REGISTRY_USER }}" \
+            -H 'Content-Type: application/json' \
             -d "{\"name\":\"${{ secrets.REGISTRY_USER }}\",\"password\":\"${{ secrets.REGISTRY_PASSWORD }}\"}" \
-            "http://10.10.0.3:4873/-/user/org.couchdb.user:${{ secrets.REGISTRY_USER }}")
-          if [ "$HTTP_STATUS" -ge 300 ]; then
-            echo "Échec du login Verdaccio (HTTP $HTTP_STATUS) :"
-            node -e "const b = JSON.parse(require('fs').readFileSync('/tmp/verdaccio-login.json', 'utf8')); delete b.token; console.log(JSON.stringify(b))"
+            | jq -r .token)
+          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+            echo "Échec de l'authentification Verdaccio : pas de token reçu"
             exit 1
           fi
-          TOKEN=$(node -e "console.log(JSON.parse(require('fs').readFileSync('/tmp/verdaccio-login.json', 'utf8')).token)")
           echo "//10.10.0.3:4873/:_authToken=${TOKEN}" > ~/.npmrc
+          echo "//10.10.0.3:4873/:always-auth=true" >> ~/.npmrc
       - run: npm publish --registry "http://10.10.0.3:4873/"
