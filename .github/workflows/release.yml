@@ -10,17 +10,16 @@ jobs:
     runs-on: [self-hosted, worker]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.13"
       - name: Set version from tag
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           sed -i "s/^version = .*/version = \"${VERSION}\"/" python/pyproject.toml
-      - run: pip install build twine
-      - run: python -m build python
+      - run: uv build python
       - run: >
-          twine upload
+          uv tool run twine upload
           --repository-url "http://10.10.0.3:8081/"
           -u "${{ secrets.REGISTRY_USER }}"
           -p "${{ secrets.REGISTRY_PASSWORD }}"
@@ -41,7 +40,10 @@ jobs:
       - run: npm install
       - run: npm run build
       - name: Configure registry auth
-        run: |
-          AUTH=$(printf '%s:%s' "${{ secrets.REGISTRY_USER }}" "${{ secrets.REGISTRY_PASSWORD }}" | base64)
-          echo "//10.10.0.3:4873/:_auth=${AUTH}" > ~/.npmrc
+        run: >
+          npx --yes npm-cli-login
+          -u "${{ secrets.REGISTRY_USER }}"
+          -p "${{ secrets.REGISTRY_PASSWORD }}"
+          -e "ci@chauffagistes-btc.fr"
+          -r "http://10.10.0.3:4873/"
       - run: npm publish --registry "http://10.10.0.3:4873/"
