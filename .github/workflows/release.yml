@@ -46,8 +46,8 @@ jobs:
             -X PUT "http://10.10.0.3:4873/-/user/org.couchdb.user:${{ secrets.REGISTRY_USER }}" \
             -H 'Content-Type: application/json' \
             -d "{\"name\":\"${{ secrets.REGISTRY_USER }}\",\"password\":\"${{ secrets.REGISTRY_PASSWORD }}\"}" \
-            | jq -r .token)
-          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+            | node -pe "JSON.parse(require('fs').readFileSync(0, 'utf8')).token")
+          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ] || [ "$TOKEN" = "undefined" ]; then
             echo "Échec de l'authentification Verdaccio : pas de token reçu"
             exit 1
           fi
