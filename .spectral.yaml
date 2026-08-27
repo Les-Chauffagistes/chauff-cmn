@@ -1,0 +1,17 @@
+extends:
+  - spectral:oas
+
+rules:
+  info-contact: off
+  oas3-api-servers: off
+  operation-tags: off
+  # Ce fichier ne déclare que des schémas, jamais de paths : tout schéma est "non utilisé" par design.
+  oas3-unused-component: off
+  schema-names-pascal-case:
+    description: Component schema names must be PascalCase.
+    severity: error
+    given: "$.components.schemas.*~"
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[A-Z][a-zA-Z0-9]*$"

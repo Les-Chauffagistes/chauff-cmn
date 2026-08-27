@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "chauff-cmn"
+version = "0.1.0"
+description = "Types partagés et wrapper de logging pour les microservices Les Chauffagistes"
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2",
+    "loguru>=0.7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/chauff_cmn"]

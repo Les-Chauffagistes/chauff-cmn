@@ -1,0 +1,66 @@
+name: checks
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-schema:
+    runs-on: [self-hosted, worker]
+    steps:
+      - uses: actions/checkout@v4
+      - run: npx --yes @stoplight/spectral-cli lint openapi/schema.yaml --ruleset .spectral.yaml
+
+  breaking-changes:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Report breaking changes vs main (advisory, does not block)
+        uses: oasdiff/oasdiff-action/breaking@main
+        with:
+          base: "openapi/schema.yaml@origin/main"
+          revision: "openapi/schema.yaml"
+
+  codegen-diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: pip install -r requirements-dev.txt
+      - run: npm install --prefix typescript
+      - run: bash scripts/generate-python.sh
+      - run: bash scripts/generate-typescript.sh
+      - name: Fail if generated code is out of sync with openapi/schema.yaml
+        run: git diff --exit-code -- python/src/chauff_cmn/models typescript/src/models
+
+  test-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e "./python[dev]"
+      - run: pytest python/tests
+
+  test-typescript:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: typescript
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install
+      - run: npm run typecheck
+      - run: npm test
