@@ -9,6 +9,19 @@ deux a changé.
 
 ## [Unreleased]
 
+## [0.0.9] - 2026-08-29
+
+### Fixed
+- Le logger TypeScript imbriquait les champs additionnels (`method`, `path`,
+  `status`, `duration_ms`, etc.) sous une clé `meta` au lieu de les exposer au
+  niveau racine du JSON, contrairement au sink Python
+  (`logger.bind(...)` y devient des clés top-level). `withRequestLogging`
+  produisait donc un format différent de `RequestLoggingMiddleware`/
+  `request_logging_middleware` pour les mêmes champs. Les champs additionnels
+  sont désormais éclatés au top-level des deux côtés.
+
+## [0.0.8] - 2026-08-29
+
 ### Added
 - Côté TypeScript, équivalent de la propagation d'id de corrélation Python
   (`AsyncLocalStorage` au lieu d'une `contextvar`) : `resolveCorrelationId`,

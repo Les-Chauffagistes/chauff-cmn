@@ -21,7 +21,7 @@ describe("withRequestLogging", () => {
     const payload = JSON.parse(line);
     expect(payload.message).toBe("requête traitée");
     expect(payload.correlation_id).toBe("incoming-id");
-    expect(payload.meta).toMatchObject({ method: "POST", path: "/api/user", status: 201 });
+    expect(payload).toMatchObject({ method: "POST", path: "/api/user", status: 201 });
 
     write.mockRestore();
   });
@@ -39,7 +39,7 @@ describe("withRequestLogging", () => {
 
     const line = write.mock.calls.at(-1)?.[0] as string;
     const payload = JSON.parse(line);
-    expect(payload.meta.status).toBe(500);
+    expect(payload.status).toBe(500);
     expect(typeof payload.correlation_id).toBe("string");
 
     write.mockRestore();

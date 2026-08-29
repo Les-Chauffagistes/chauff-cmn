@@ -27,7 +27,10 @@ function write(level: LogLevel, args: unknown[]): void {
     service: state.service,
     message,
     correlation_id: getCorrelationId(),
-    ...(meta ? { meta } : {}),
+    // Éclaté au top-level plutôt que sous une clé `meta`, pour matcher
+    // record["extra"] côté Python (logger.bind(...) devient des clés JSON
+    // top-level, voir _make_sink dans logging/__init__.py).
+    ...(meta ? meta : {}),
     ...(error?.stack ? { exception: error.stack } : {}),
   };
 
