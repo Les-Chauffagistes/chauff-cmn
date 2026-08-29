@@ -1,4 +1,4 @@
-import { getCorrelationId } from "./_correlation";
+import { getTraceId } from "./_trace";
 
 type LogLevel = "debug" | "info" | "warn" | "error";
 
@@ -26,7 +26,7 @@ function write(level: LogLevel, args: unknown[]): void {
     level: level.toUpperCase(),
     service: state.service,
     message,
-    correlation_id: getCorrelationId(),
+    trace_id: getTraceId(),
     // Éclaté au top-level plutôt que sous une clé `meta`, pour matcher
     // record["extra"] côté Python (logger.bind(...) devient des clés JSON
     // top-level, voir _make_sink dans logging/__init__.py).

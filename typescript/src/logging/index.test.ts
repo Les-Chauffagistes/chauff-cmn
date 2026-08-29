@@ -14,7 +14,7 @@ describe("logger", () => {
     expect(payload.service).toBe("test-service");
     expect(payload.message).toBe("hello");
     expect(payload.level).toBe("INFO");
-    expect(payload.correlation_id).toBeNull();
+    expect(payload.trace_id).toBeNull();
 
     write.mockRestore();
   });

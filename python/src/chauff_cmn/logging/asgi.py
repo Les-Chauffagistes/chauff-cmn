@@ -6,12 +6,7 @@ import time
 from typing import Any, Awaitable, Callable, MutableMapping
 
 from . import logger
-from ._correlation import (
-    REQUEST_ID_HEADER,
-    bind_correlation_id,
-    reset_correlation_id,
-    resolve_correlation_id,
-)
+from ._trace import bind_trace_id, reset_trace_id, resolve_trace_id
 
 __all__ = ["RequestLoggingMiddleware"]
 
@@ -35,8 +30,8 @@ class RequestLoggingMiddleware:
             key.decode("latin-1"): value.decode("latin-1")
             for key, value in scope.get("headers", [])
         }
-        correlation_id = resolve_correlation_id(headers)
-        token = bind_correlation_id(correlation_id)
+        trace_id = resolve_trace_id(headers)
+        token = bind_trace_id(trace_id)
         start = time.perf_counter()
         status = 500
 
@@ -44,17 +39,13 @@ class RequestLoggingMiddleware:
             nonlocal status
             if message["type"] == "http.response.start":
                 status = message["status"]
-                message["headers"] = [
-                    *message.get("headers", []),
-                    (REQUEST_ID_HEADER.encode("latin-1"), correlation_id.encode("latin-1")),
-                ]
             await send(message)
 
         try:
             await self.app(scope, receive, send_wrapper)
         finally:
             duration_ms = round((time.perf_counter() - start) * 1000, 2)
-            # correlation_id est injecté automatiquement par le patcher loguru
+            # trace_id est injecté automatiquement par le patcher loguru
             # (via le contextvar posé ci-dessus), pas besoin de le binder ici.
             logger.bind(
                 method=scope.get("method"),
@@ -62,4 +53,4 @@ class RequestLoggingMiddleware:
                 status=status,
                 duration_ms=duration_ms,
             ).info("requête traitée")
-            reset_correlation_id(token)
+            reset_trace_id(token)
