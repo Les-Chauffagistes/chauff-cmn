@@ -1,27 +1,34 @@
+import { getCorrelationId } from "./_correlation";
+
 type LogLevel = "debug" | "info" | "warn" | "error";
 
 interface LoggerState {
   service: string;
-  correlationId: string | null;
 }
 
-const state: LoggerState = { service: "unknown", correlationId: null };
+const state: LoggerState = { service: "unknown" };
 
 export function configure(options: { service: string }): void {
   state.service = options.service;
 }
 
 function write(level: LogLevel, args: unknown[]): void {
-  const [message, ...rest] = args;
+  const [first, ...rest] = args;
+  // JSON.stringify(error) donne "{}" (message/stack ne sont pas énumérables) :
+  // on extrait le message et la stack explicitement, comme le fait Python
+  // avec record["exception"].
+  const error = first instanceof Error ? first : undefined;
+  const message = error ? error.message : typeof first === "string" ? first : JSON.stringify(first);
   const meta = rest.length === 1 && typeof rest[0] === "object" && rest[0] !== null ? rest[0] : rest.length ? { args: rest } : undefined;
 
   const payload = {
     timestamp: new Date().toISOString(),
     level: level.toUpperCase(),
     service: state.service,
-    message: typeof message === "string" ? message : JSON.stringify(message),
-    correlation_id: state.correlationId,
+    message,
+    correlation_id: getCorrelationId(),
     ...(meta ? { meta } : {}),
+    ...(error?.stack ? { exception: error.stack } : {}),
   };
 
   process.stdout.write(JSON.stringify(payload) + "\n");

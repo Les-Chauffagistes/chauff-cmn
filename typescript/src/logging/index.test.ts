@@ -18,4 +18,19 @@ describe("logger", () => {
 
     write.mockRestore();
   });
+
+  it("extrait message et stack d'une Error au lieu de sérialiser en '{}'", () => {
+    configure({ service: "test-service" });
+    const write = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+
+    logger.error(new Error("boom"));
+
+    const line = write.mock.calls[0][0] as string;
+    const payload = JSON.parse(line);
+
+    expect(payload.message).toBe("boom");
+    expect(payload.exception).toContain("Error: boom");
+
+    write.mockRestore();
+  });
 });

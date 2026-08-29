@@ -9,6 +9,24 @@ deux a changé.
 
 ## [Unreleased]
 
+### Added
+- Côté TypeScript, équivalent de la propagation d'id de corrélation Python
+  (`AsyncLocalStorage` au lieu d'une `contextvar`) : `resolveCorrelationId`,
+  `REQUEST_ID_HEADER`.
+- `withRequestLogging`, wrapper de route handler Next.js (App Router) qui logge
+  method/path/status/duration_ms et propage `X-Request-Id` — équivalent, au
+  niveau d'un handler, de `chauff_cmn.logging.asgi.RequestLoggingMiddleware`.
+  Contrairement à `asgi.py`, ne peut pas s'appliquer globalement via
+  `middleware.ts` : ce fichier s'exécute avant le handler et ne voit jamais la
+  réponse, donc pas de statut/durée disponible à ce niveau côté Next.js.
+
+### Fixed
+- Le logger TypeScript sérialisait un objet `Error` passé à `logger.error(e)`
+  en `"{}"` (`message`/`stack` ne sont pas énumérables) — tout le contenu de
+  l'erreur était perdu. Le message et la stack sont désormais extraits
+  explicitement, la stack posée dans un champ `exception` (parité avec le sink
+  Python).
+
 ## [0.0.7] - 2026-08-28
 
 ### Added
