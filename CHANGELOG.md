@@ -9,6 +9,8 @@ deux a changé.
 
 ## [Unreleased]
 
+## [0.0.11] - 2026-08-29
+
 ### Added
 - `tracedFetch`, équivalent TypeScript de `create_traced_session()`
   (`chauff_cmn.logging.aiohttp_client`) pour `fetch` : pose `traceparent` sur
