@@ -9,6 +9,20 @@ deux a changé.
 
 ## [Unreleased]
 
+### Added
+- `tracedFetch`, équivalent TypeScript de `create_traced_session()`
+  (`chauff_cmn.logging.aiohttp_client`) pour `fetch` : pose `traceparent` sur
+  chaque requête sortante, avec le trace-id du contexte de requête entrante
+  en cours (ou un nouveau si aucun contexte, par exemple depuis un job de
+  fond) et un span-id neuf à chaque appel. Sans ça, un trace démarré côté
+  Next.js s'arrêtait à son premier appel `fetch` sortant vers un backend —
+  même lacune que celle qui avait motivé `aiohttp_client.py` côté Python.
+  Contrairement à `aiohttp` qui expose un objet `ClientSession`/`TraceConfig`
+  réutilisable, `fetch` est une fonction unique : `tracedFetch` est donc un
+  wrapper de la fonction elle-même (même signature que `fetch` global),
+  drop-in replacement à utiliser à la place de `fetch` pour tout appel
+  sortant depuis un Server Component ou un route handler.
+
 ## [0.0.10] - 2026-08-29
 
 ### Changed
