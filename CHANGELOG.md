@@ -9,6 +9,38 @@ deux a changé.
 
 ## [Unreleased]
 
+### Changed
+- L'id de corrélation (`X-Request-Id`, généré en uuid4 si absent, écho sur la
+  réponse) est remplacé par un mécanisme unique basé sur `traceparent` (W3C
+  Trace Context). Deux identifiants maison qui se recoupaient sans se
+  compléter (aucun des deux ne survivait à un appel sortant entre services)
+  n'avaient plus de raison d'exister côte à côte : `traceparent` est déjà le
+  format que Traefik pose en entrée de la plateforme, et le standardiser de
+  bout en bout évite de traduire entre deux identifiants aux mêmes endroits
+  où ça compte (logs, appels sortants). `resolve_trace_id`/`resolveTraceId`
+  reprend le trace-id du `traceparent` entrant s'il est valide, en génère un
+  nouveau sinon — jamais de valeur nulle, même politique que Traefik
+  ("continue le trace existant si présent, sinon en démarre un nouveau"). Le
+  sink JSON (Python et TypeScript) expose désormais `trace_id` au lieu de
+  `correlation_id`.
+- Plus aucun header n'est posé ou échoté sur la réponse HTTP par les
+  middlewares serveur (`chauff_cmn.logging.aiohttp`, `chauff_cmn.logging.asgi`,
+  `withRequestLogging`) : `traceparent` est un header de requête, pas de
+  réponse, et le moins de headers/identifiants transportés est plus simple à
+  raisonner que l'écho précédent.
+- `python/src/chauff_cmn/logging/_correlation.py` et
+  `typescript/src/logging/_correlation.ts` sont renommés en `_trace.py` /
+  `_trace.ts` pour refléter le nouveau contenu.
+
+### Added
+- `chauff_cmn.logging.aiohttp_client` (extra `aiohttp`) : `traced_trace_config()`
+  et `create_traced_session()` posent automatiquement `traceparent` sur
+  chaque requête aiohttp sortante, avec le trace-id du contexte de requête
+  entrante en cours (ou un nouveau si aucun contexte, par exemple depuis un
+  job de fond) et un span-id neuf à chaque appel. Sans ça, un trace démarré
+  par un service s'arrêtait à sa première requête sortante — les appels
+  inter-services perdaient le fil.
+
 ## [0.0.9] - 2026-08-29
 
 ### Fixed
