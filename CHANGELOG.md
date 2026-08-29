@@ -9,6 +9,8 @@ deux a changé.
 
 ## [Unreleased]
 
+## [0.0.10] - 2026-08-29
+
 ### Changed
 - L'id de corrélation (`X-Request-Id`, généré en uuid4 si absent, écho sur la
   réponse) est remplacé par un mécanisme unique basé sur `traceparent` (W3C
