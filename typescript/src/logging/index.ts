@@ -1,4 +1,4 @@
-import { getTraceId } from "./_trace";
+import { trace } from "@opentelemetry/api";
 
 type LogLevel = "debug" | "info" | "warn" | "error";
 
@@ -21,12 +21,17 @@ function write(level: LogLevel, args: unknown[]): void {
   const message = error ? error.message : typeof first === "string" ? first : JSON.stringify(first);
   const meta = rest.length === 1 && typeof rest[0] === "object" && rest[0] !== null ? rest[0] : rest.length ? { args: rest } : undefined;
 
+  // trace_id/span_id proviennent du span OTel actif (posé par
+  // withRequestLogging via `startActiveSpan`), pas d'un identifiant maison.
+  const spanContext = trace.getActiveSpan()?.spanContext();
+
   const payload = {
     timestamp: new Date().toISOString(),
     level: level.toUpperCase(),
     service: state.service,
     message,
-    trace_id: getTraceId(),
+    trace_id: spanContext?.traceId ?? null,
+    span_id: spanContext?.spanId ?? null,
     // Éclaté au top-level plutôt que sous une clé `meta`, pour matcher
     // record["extra"] côté Python (logger.bind(...) devient des clés JSON
     // top-level, voir _make_sink dans logging/__init__.py).

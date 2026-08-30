@@ -4,17 +4,27 @@
   "description": "Types partagés et wrapper de logging pour les microservices Les Chauffagistes",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/context-async-hooks": "^2.10.0",
+    "@opentelemetry/core": "^2.10.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.221.0",
+    "@opentelemetry/resources": "^2.10.0",
+    "@opentelemetry/sdk-trace-base": "^2.10.0",
+    "@opentelemetry/sdk-trace-node": "^2.10.0"
+  },
   "devDependencies": {
     "@types/node": "^22.9.0",
+    "openapi-typescript": "^7.4.2",
     "typescript": "^5.6.3",
-    "vitest": "^2.1.4",
-    "openapi-typescript": "^7.4.2"
+    "vitest": "^2.1.4"
   }
 }

@@ -1,6 +1,7 @@
 import json
 
 import httpx
+from opentelemetry.trace import SpanKind
 
 from chauff_cmn.logging import configure, logger
 from chauff_cmn.logging.asgi import RequestLoggingMiddleware
@@ -13,7 +14,7 @@ async def _app(scope, receive, send):
     await send({"type": "http.response.body", "body": b"{}"})
 
 
-async def test_logs_structured_fields_and_reuses_incoming_trace_id(capsys):
+async def test_logs_structured_fields_and_reuses_incoming_trace_id(capsys, spans):
     configure(service="test-service", level="INFO")
     app = RequestLoggingMiddleware(_app)
 
@@ -32,8 +33,15 @@ async def test_logs_structured_fields_and_reuses_incoming_trace_id(capsys):
     assert payload["trace_id"] == "4bf92f3577b34da6a3ce929d0e0e4736"
     assert isinstance(payload["duration_ms"], (int, float))
 
+    (span,) = spans.get_finished_spans()
+    assert span.kind == SpanKind.SERVER
+    assert span.name == "GET /ping"
+    assert format(span.context.trace_id, "032x") == "4bf92f3577b34da6a3ce929d0e0e4736"
+    assert format(span.parent.span_id, "016x") == "00f067aa0ba902b7"
+    assert span.attributes["http.status_code"] == 200
 
-async def test_generates_a_trace_id_when_absent(capsys):
+
+async def test_generates_a_trace_id_when_absent(capsys, spans):
     configure(service="test-service", level="INFO")
     app = RequestLoggingMiddleware(_app)
 
@@ -45,8 +53,11 @@ async def test_generates_a_trace_id_when_absent(capsys):
     payload = json.loads(capsys.readouterr().out.strip().splitlines()[-1])
     assert payload["trace_id"]
 
+    (span,) = spans.get_finished_spans()
+    assert span.parent is None
 
-async def test_generates_a_trace_id_when_traceparent_is_malformed(capsys):
+
+async def test_generates_a_trace_id_when_traceparent_is_malformed(capsys, spans):
     configure(service="test-service", level="INFO")
     app = RequestLoggingMiddleware(_app)
 
@@ -62,8 +73,11 @@ async def test_generates_a_trace_id_when_traceparent_is_malformed(capsys):
     assert payload["trace_id"]
     assert payload["trace_id"] != "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
 
+    (span,) = spans.get_finished_spans()
+    assert span.parent is None
 
-async def test_no_response_header_is_set(capsys):
+
+async def test_no_response_header_is_set(capsys, spans):
     configure(service="test-service", level="INFO")
     app = RequestLoggingMiddleware(_app)
 
@@ -75,7 +89,7 @@ async def test_no_response_header_is_set(capsys):
     assert "x-request-id" not in resp.headers
 
 
-async def test_trace_id_reaches_logs_emitted_deep_inside_the_handler(capsys):
+async def test_trace_id_reaches_logs_emitted_deep_inside_the_handler(capsys, spans):
     configure(service="test-service", level="INFO")
 
     async def app(scope, receive, send):

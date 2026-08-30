@@ -9,6 +9,65 @@ deux a changé.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-08-30
+
+### Added
+- TypeScript : `activeTraceContext()`, `extractTraceContext(headers)`,
+  `withTraceContext(ctx, fn)` (module `tracing.ts`, type `Context` réexporté
+  de `@opentelemetry/api`) — équivalent typé `Context` de l'ancien
+  `resolveTraceId`/`runWithTraceId`, pour les chemins de code qui n'ont pas de
+  contexte de trace ambiant posé par un middleware (ex. une Server Action
+  Next.js, jamais enveloppée par `withRequestLogging`) : le contexte doit y
+  être capturé explicitement (dès l'entrée, ou via `activeTraceContext()`
+  quand un span existe déjà plus haut) puis réinjecté explicitement autour
+  des appels sortants qui suivent, potentiellement après un `await`
+  intermédiaire.
+- TypeScript : `setupTracing({ ..., handleShutdownSignal: false })` — désactive
+  l'auto-enregistrement du handler `SIGTERM` interne de `setupTracing()`.
+  Nécessaire pour tout consommateur qui a déjà sa propre séquence d'arrêt
+  (ex. drainage de boucles de fond) : deux handlers `SIGTERM` indépendants,
+  dont un qui appelle `process.exit()`, ne s'exécutent pas forcément dans
+  l'ordre voulu (Node ne garantit rien entre listeners `once` indépendants).
+  Le consommateur appelle alors `shutdownTracing()` lui-même, au bon endroit
+  de sa propre séquence d'arrêt.
+
+### Changed
+- **Breaking.** La propagation de trace-id maison (`chauff_cmn.logging._trace`
+  / `logging/_trace.ts` : `trace_id_var`, `resolve_trace_id`/`resolveTraceId`,
+  `bind_trace_id`/`reset_trace_id`/`runWithTraceId`, `TRACEPARENT_HEADER`,
+  `format_traceparent`, `generate_trace_id`/`generate_span_id`) est
+  entièrement supprimée et remplacée par le SDK OpenTelemetry natif. Jusqu'ici
+  ce mécanisme ne faisait que recopier le trace-id d'un service à l'autre pour
+  corréler les logs (Loki) — aucun span applicatif n'était créé ni exporté,
+  alors que Tempo (`deploy/stacks/core/tempo.yml`) et le tracing OTLP de
+  Traefik tournent déjà en infra depuis le 2026-08-29. Un seul mécanisme de
+  propagation valait mieux que deux implémentations parallèles du même concept
+  W3C Trace Context.
+  - Nouveau module `chauff_cmn.tracing` / `tracing.ts` :
+    `setup_tracing(service, endpoint=None)` / `setupTracing({ service,
+    endpoint? })`, à appeler une fois au démarrage du service, installe un
+    `TracerProvider` qui exporte en OTLP/HTTP vers Tempo (`http://tempo:4318`
+    par défaut, override via `OTEL_EXPORTER_OTLP_ENDPOINT`) ; et
+    `shutdown_tracing()` / `shutdownTracing()` pour flusher les spans
+    bufferisés avant l'arrêt du process (à brancher explicitement sur le hook
+    d'arrêt du framework côté Python — lifespan FastAPI, `on_cleanup` aiohttp
+    — `atexit` seul ne suffit pas sur un `SIGTERM` non intercepté ; géré
+    automatiquement via un handler `SIGTERM` côté TypeScript).
+  - `RequestLoggingMiddleware`/`request_logging_middleware`/
+    `withRequestLogging` créent désormais un vrai span `SERVER` par requête
+    (continué depuis le `traceparent` entrant s'il est valide, sinon nouvelle
+    trace racine — même politique qu'avant et que Traefik en amont), et
+    `create_traced_session`/`traced_trace_config`/`tracedFetch` un vrai span
+    `CLIENT` par appel sortant. Tempo affiche donc maintenant une trace
+    distribuée détaillée par service, pas seulement le span Traefik en
+    périphérie.
+  - Le format du champ `trace_id` dans les logs JSON est inchangé (le lien
+    Grafana Tempo→Loki, basé sur un substring match, n'est pas affecté) ;
+    nouveau champ `span_id` ajouté à côté.
+  - Les consommateurs devront migrer : appeler `setup_tracing`/`setupTracing`
+    au démarrage et, côté Python, brancher `shutdown_tracing()` sur l'arrêt du
+    framework.
+
 ## [0.0.11] - 2026-08-29
 
 ### Added

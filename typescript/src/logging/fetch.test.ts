@@ -1,14 +1,29 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { context, propagation, SpanKind } from "@opentelemetry/api";
 import { tracedFetch } from "./fetch";
-import { TRACEPARENT_HEADER, runWithTraceId } from "./_trace";
+import { testSpanExporter } from "../vitest.setup";
 
+const TRACEPARENT_HEADER = "traceparent";
 const HEX_32_RE = /^[0-9a-f]{32}$/;
+const INCOMING_TRACEPARENT = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01";
 
 function parseTraceparent(value: string | null): { traceId: string; spanId: string } {
   expect(value).not.toBeNull();
   const parts = (value as string).split("-");
   expect(parts).toHaveLength(4);
   return { traceId: parts[1], spanId: parts[2] };
+}
+
+// Simule le span serveur posé par `withRequestLogging` pour une requête
+// entrante avec ce trace-id, en extrayant un `traceparent` comme le ferait le
+// middleware.
+function withIncomingTraceContext<T>(fn: () => T): T {
+  const headers = new Headers({ [TRACEPARENT_HEADER]: INCOMING_TRACEPARENT });
+  const ctx = propagation.extract(context.active(), headers, {
+    get: (carrier, key) => carrier.get(key) ?? undefined,
+    keys: (carrier) => Array.from(carrier.keys()),
+  });
+  return context.with(ctx, fn);
 }
 
 describe("tracedFetch", () => {
@@ -20,7 +35,7 @@ describe("tracedFetch", () => {
     const fetchMock = vi.fn(async (_input: string | URL | Request, _init?: RequestInit) => new Response("ok"));
     vi.stubGlobal("fetch", fetchMock);
 
-    await runWithTraceId("4bf92f3577b34da6a3ce929d0e0e4736", () => tracedFetch("http://backend/api"));
+    await withIncomingTraceContext(() => tracedFetch("http://backend/api"));
 
     const init = fetchMock.mock.calls[0][1] as RequestInit;
     const headers = init.headers as Headers;
@@ -44,7 +59,7 @@ describe("tracedFetch", () => {
     const fetchMock = vi.fn(async (_input: string | URL | Request, _init?: RequestInit) => new Response("ok"));
     vi.stubGlobal("fetch", fetchMock);
 
-    await runWithTraceId("4bf92f3577b34da6a3ce929d0e0e4736", async () => {
+    await withIncomingTraceContext(async () => {
       await tracedFetch("http://backend/api/one");
       await tracedFetch("http://backend/api/two");
     });
@@ -102,5 +117,16 @@ describe("tracedFetch", () => {
     expect(headers.get("Authorization")).toBe("Bearer token");
     expect(headers.get("X-Custom")).toBe("value");
     expect(headers.get(TRACEPARENT_HEADER)).not.toBeNull();
+  });
+
+  it("exporte un span CLIENT par appel avec le statut HTTP", async () => {
+    const fetchMock = vi.fn(async (_input: string | URL | Request, _init?: RequestInit) => new Response("ok", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await tracedFetch("http://backend/api");
+
+    const [span] = testSpanExporter.getFinishedSpans();
+    expect(span.kind).toBe(SpanKind.CLIENT);
+    expect(span.attributes["http.status_code"]).toBe(200);
   });
 });

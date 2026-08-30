@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
+import { SpanKind } from "@opentelemetry/api";
 import { withRequestLogging } from "./request";
-import { TRACEPARENT_HEADER } from "./_trace";
+import { testSpanExporter } from "../vitest.setup";
 
+const TRACEPARENT_HEADER = "traceparent";
 const VALID_TRACEPARENT = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01";
 
 describe("withRequestLogging", () => {
@@ -25,6 +27,13 @@ describe("withRequestLogging", () => {
     expect(payload.trace_id).toBe("4bf92f3577b34da6a3ce929d0e0e4736");
     expect(payload).toMatchObject({ method: "POST", path: "/api/user", status: 201 });
 
+    const [span] = testSpanExporter.getFinishedSpans();
+    expect(span.kind).toBe(SpanKind.SERVER);
+    expect(span.name).toBe("POST /api/user");
+    expect(span.spanContext().traceId).toBe("4bf92f3577b34da6a3ce929d0e0e4736");
+    expect(span.parentSpanContext?.spanId).toBe("00f067aa0ba902b7");
+    expect(span.attributes["http.status_code"]).toBe(201);
+
     write.mockRestore();
   });
 
@@ -41,6 +50,9 @@ describe("withRequestLogging", () => {
     const payload = JSON.parse(line);
     expect(typeof payload.trace_id).toBe("string");
     expect(payload.trace_id).toHaveLength(32);
+
+    const [span] = testSpanExporter.getFinishedSpans();
+    expect(span.parentSpanContext).toBeUndefined();
 
     write.mockRestore();
   });

@@ -1,26 +1,48 @@
-import { TRACEPARENT_HEADER, formatTraceparent, generateTraceId, getTraceId } from "./_trace";
+import { context, propagation, trace, type TextMapSetter, SpanKind, SpanStatusCode } from "@opentelemetry/api";
 
-// Wrapper de `fetch` qui pose systématiquement un header `traceparent`
-// sortant — équivalent, pour `fetch`, de `create_traced_session()` côté
-// Python (aiohttp_client.py). Contrairement à aiohttp qui expose un objet
-// `ClientSession`/`TraceConfig` réutilisable, `fetch` est une fonction
-// unique : l'équivalent naturel est donc un wrapper de la fonction
-// elle-même, drop-in replacement de `fetch` global (même signature).
+const tracer = trace.getTracer("chauff-cmn");
+
+const headersSetter: TextMapSetter<Headers> = {
+  set(carrier, key, value) {
+    carrier.set(key, value);
+  },
+};
+
+// Wrapper de `fetch` qui enveloppe chaque appel sortant dans un span
+// OpenTelemetry CLIENT et propage le contexte de trace courant (W3C Trace
+// Context) via le header `traceparent` — équivalent, pour `fetch`, de
+// `create_traced_session()` côté Python (aiohttp_client.py). Contrairement à
+// aiohttp qui expose un objet `ClientSession`/`TraceConfig` réutilisable,
+// `fetch` est une fonction unique : l'équivalent naturel est donc un wrapper
+// de la fonction elle-même, drop-in replacement de `fetch` global (même
+// signature).
 //
-// Reprend le trace_id du contexte de requête entrante en cours s'il y en a
-// un (posé par `withRequestLogging`), sinon en génère un nouveau à la volée
-// — un appel sortant part toujours avec un traceparent, y compris depuis un
-// job de fond hors contexte de requête entrante. Un span-id neuf est généré
-// à chaque appel, jamais réutilisé (même politique que
-// `_on_request_start` côté aiohttp).
+// Le span est enfant du span actif s'il y en a un (posé par
+// `withRequestLogging`), sinon nouvelle trace racine — un appel sortant part
+// toujours avec un traceparent, y compris depuis un job de fond hors contexte
+// de requête entrante.
 //
 // Les headers déjà présents dans `init.headers` (`Headers`, tableau de
 // tuples ou objet plat — les trois formes valides de `RequestInit.headers`)
 // sont préservés : `traceparent` s'ajoute sans les écraser.
-export function tracedFetch(input: string | URL | Request, init?: RequestInit): Promise<Response> {
-  const traceId = getTraceId() ?? generateTraceId();
-  const headers = new Headers(init?.headers);
-  headers.set(TRACEPARENT_HEADER, formatTraceparent(traceId));
+export async function tracedFetch(input: string | URL | Request, init?: RequestInit): Promise<Response> {
+  const method = init?.method ?? (input instanceof Request ? input.method : "GET");
+  const url = input instanceof Request ? input.url : input.toString();
+  const span = tracer.startSpan(`${method} ${url}`, { kind: SpanKind.CLIENT });
 
-  return fetch(input, { ...init, headers });
+  const headers = new Headers(init?.headers);
+  propagation.inject(trace.setSpan(context.active(), span), headers, headersSetter);
+
+  try {
+    const response = await fetch(input, { ...init, headers });
+    span.setAttribute("http.status_code", response.status);
+    if (response.status >= 500) span.setStatus({ code: SpanStatusCode.ERROR });
+    return response;
+  } catch (error) {
+    span.recordException(error as Error);
+    span.setStatus({ code: SpanStatusCode.ERROR });
+    throw error;
+  } finally {
+    span.end();
+  }
 }
