@@ -160,6 +160,44 @@ export interface components {
             file: string;
             rejectReason?: string | null;
         };
+        PoolStats: {
+            address: string;
+            globalStats: components["schemas"]["Hashrates"] & {
+                shares: number;
+                bestshare: number;
+                workers: number;
+            };
+            workers: components["schemas"]["Worker"][];
+        };
+        BitcoinPrice: {
+            time: number;
+            USD: number;
+            EUR: number;
+            GBP: number;
+            CAD: number;
+            CHF: number;
+            AUD: number;
+            JPY?: number;
+        };
+        WorkerStatsHistory: {
+            timestamp: string;
+            avg_hashrate1m: string;
+            avg_hashrate5m: string;
+            avg_hashrate1h: string;
+            avg_hashrate1d: string;
+            avg_hashrate7d: string;
+            avg_weight: string;
+        };
+        PoolStatsHistory: {
+            timestamp: string;
+            avg_hashrate1h: number;
+            avg_hashrate1d: number;
+        };
+        WorkersWeights: {
+            worker_id: string;
+            avg_weight: string;
+            timestamp: string;
+        };
     };
     responses: never;
     parameters: never;

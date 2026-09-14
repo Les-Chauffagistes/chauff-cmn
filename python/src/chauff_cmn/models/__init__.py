@@ -175,6 +175,51 @@ class Share(BaseModel):
     rejectReason: str | None = None
 
 
+class GlobalStats(Hashrates):
+    shares: float
+    bestshare: float
+    workers: float
+
+
+class PoolStats(BaseModel):
+    address: str
+    globalStats: GlobalStats
+    workers: list[Worker]
+
+
+class BitcoinPrice(BaseModel):
+    time: float
+    USD: float
+    EUR: float
+    GBP: float
+    CAD: float
+    CHF: float
+    AUD: float
+    JPY: float | None = None
+
+
+class WorkerStatsHistory(BaseModel):
+    timestamp: str
+    avg_hashrate1m: str
+    avg_hashrate5m: str
+    avg_hashrate1h: str
+    avg_hashrate1d: str
+    avg_hashrate7d: str
+    avg_weight: str
+
+
+class PoolStatsHistory(BaseModel):
+    timestamp: str
+    avg_hashrate1h: float
+    avg_hashrate1d: float
+
+
+class WorkersWeights(BaseModel):
+    worker_id: str
+    avg_weight: str
+    timestamp: str
+
+
 class Pool(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
