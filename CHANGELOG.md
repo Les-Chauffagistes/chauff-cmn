@@ -9,6 +9,21 @@ deux a changé.
 
 ## [Unreleased]
 
+### Added
+- TypeScript : nouveau point d'entrée `@chauffagistes/cmn/ui` (`Navbar`,
+  `Footer`) — composants React génériques, pilotés par props (aucune route ni
+  URL en dur), extraits de pool-site où ils avaient été dupliqués à
+  l'identique dans auth-service-front. Séparés de l'entrée `.` existante
+  (100% Node/otel) pour ne pas forcer React comme dépendance des
+  consommateurs backend-only, ni faire fuiter les deps otel côté client :
+  `react`, `react-dom` et `next` sont des `peerDependencies`, fournis par
+  l'app hôte. `Footer` s'accompagne d'un stylesheet `@chauffagistes/cmn/ui/footer.css`
+  (CSS classique, pas un CSS Module — les CSS Modules ne sont pas résolus par
+  Next.js depuis `node_modules`) à importer une fois par l'app hôte. Les deux
+  composants s'appuient sur les custom properties CSS déjà utilisées par
+  pool-site : `--text-main`, `--text-muted`, `--bg-alt`, `--border-color`,
+  `--max-width`.
+
 ## [0.1.0] - 2026-08-30
 
 ### Added

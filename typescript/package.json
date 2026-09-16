@@ -12,13 +12,18 @@
     "./tracing": {
       "types": "./dist/tracing.d.ts",
       "default": "./dist/tracing.js"
-    }
+    },
+    "./ui": {
+      "types": "./dist/ui/index.d.ts",
+      "default": "./dist/ui/index.js"
+    },
+    "./ui/footer.css": "./dist/ui/footer.css"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && cp src/ui/footer.css dist/ui/footer.css",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
@@ -31,9 +36,21 @@
     "@opentelemetry/sdk-trace-base": "^2.10.0",
     "@opentelemetry/sdk-trace-node": "^2.10.0"
   },
+  "peerDependencies": {
+    "lucide-react": ">=0.500.0",
+    "next": ">=15.0.0",
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0"
+  },
   "devDependencies": {
     "@types/node": "^22.9.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "lucide-react": "^0.562.0",
+    "next": "^15.5.20",
     "openapi-typescript": "^7.4.2",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "typescript": "^5.6.3",
     "vitest": "^2.1.4"
   }
