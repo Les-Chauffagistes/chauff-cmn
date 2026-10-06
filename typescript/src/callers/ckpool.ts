@@ -7,7 +7,7 @@ export class CKPoolAPIClient {
         this.apiUrl = apiUrl;
     }
 
-    async getPoolShareRepartition(address: string, window_days: number = 14): Promise<components["schemas"]["PoolDistributionElement"]> {
+    async getPoolShareRepartition(address: string, window_days: number = 14): Promise<components["schemas"]["PoolDistributionElement"][]> {
         return await fetch(`${this.apiUrl}/v1/distribution/${address}?window_days=${window_days}`).then((res) => res.json());
     }
 
