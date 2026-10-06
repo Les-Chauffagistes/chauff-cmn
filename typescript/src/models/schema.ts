@@ -198,6 +198,13 @@ export interface components {
             avg_weight: string;
             timestamp: string;
         };
+        PoolDistributionElement: {
+            workername: string;
+            diff_sum: number;
+            part: number;
+            shares_ok: number;
+            shares_ko: number;
+        };
     };
     responses: never;
     parameters: never;

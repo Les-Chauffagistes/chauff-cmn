@@ -220,6 +220,14 @@ class WorkersWeights(BaseModel):
     timestamp: str
 
 
+class PoolDistributionElement(BaseModel):
+    workername: str
+    diff_sum: float
+    part: float
+    shares_ok: float
+    shares_ko: float
+
+
 class Pool(BaseModel):
     model_config = ConfigDict(
         extra='forbid',

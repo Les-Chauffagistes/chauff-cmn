@@ -528,3 +528,22 @@ components:
         - worker_id
         - avg_weight
         - timestamp
+    PoolDistributionElement:
+      type: object
+      properties:
+        workername:
+          type: string
+        diff_sum:
+          type: number
+        part:
+          type: number
+        shares_ok:
+          type: number
+        shares_ko:
+          type: number
+      required:
+        - workername
+        - diff_sum
+        - part
+        - shares_ko
+        - shares_ok
