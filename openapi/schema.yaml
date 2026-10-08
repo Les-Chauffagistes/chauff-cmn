@@ -251,7 +251,7 @@ components:
         runtime:
           type: number
         lastupdate:
-          type: string
+          type: number
         Users:
           type: number
         Workers:

@@ -114,7 +114,7 @@ class PoolRuntime(BaseModel):
         extra='forbid',
     )
     runtime: float
-    lastupdate: str
+    lastupdate: float
     Users: float
     Workers: float
     Idle: float
