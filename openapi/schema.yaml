@@ -185,11 +185,11 @@ components:
         - peers
       properties:
         height:
-          type: number
+          type: integer
         subversion:
           type: string
         peers:
-          type: number
+          type: integer
     NumberHashrate:
       type: object
       additionalProperties: false

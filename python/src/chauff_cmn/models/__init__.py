@@ -88,9 +88,9 @@ class Node(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
-    height: float
+    height: int
     subversion: str
-    peers: float
+    peers: int
 
 
 class NumberHashrate(BaseModel):
