@@ -147,8 +147,8 @@ class Repartition(BaseModel):
 
 class Worker(Hashrates):
     workername: str
-    lastshare: str
-    shares: float
+    lastshare: int
+    shares: int
     bestshare: float
     bestever: float
 

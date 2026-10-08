@@ -132,7 +132,7 @@ export interface components {
         };
         Worker: components["schemas"]["Hashrates"] & {
             workername: string;
-            lastshare: string;
+            lastshare: number;
             shares: number;
             bestshare: number;
             bestever: number;
