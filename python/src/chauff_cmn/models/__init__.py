@@ -113,12 +113,12 @@ class PoolRuntime(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
-    runtime: float
-    lastupdate: float
-    Users: float
-    Workers: float
-    Idle: float
-    Disconnected: float
+    runtime: int
+    lastupdate: int
+    Users: int
+    Workers: int
+    Idle: int
+    Disconnected: int
 
 
 class PoolShares(BaseModel):
@@ -126,9 +126,9 @@ class PoolShares(BaseModel):
         extra='forbid',
     )
     diff: float
-    accepted: float
-    rejected: float
-    bestshare: float
+    accepted: int
+    rejected: int
+    bestshare: int
     SPS1m: float
     SPS5m: float
     SPS15m: float
