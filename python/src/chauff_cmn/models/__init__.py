@@ -147,7 +147,7 @@ class PoolPing(BaseModel):
     total: int
     online: int
     offline: int
-    host: list[PoolHost]
+    hosts: list[PoolHost]
 
 
 class Repartition(BaseModel):

@@ -127,7 +127,7 @@ export interface components {
             total: number;
             online: number;
             offline: number;
-            host: components["schemas"]["PoolHost"][];
+            hosts: components["schemas"]["PoolHost"][];
         };
         Repartition: {
             shares: number;

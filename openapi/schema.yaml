@@ -315,7 +315,7 @@ components:
           type: integer
         offline:
           type: integer
-        host:
+        hosts:
           type: array
           items:
             $ref: "#/components/schemas/PoolHost"
@@ -324,7 +324,7 @@ components:
         - total
         - offline
         - online
-        - host
+        - hosts
     Repartition:
       type: object
       additionalProperties: false
