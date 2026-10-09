@@ -215,7 +215,7 @@ components:
       additionalProperties: false
       required:
         - runtime
-        - hashrate
+        - hashrates
         - shares
       properties:
         runtime:

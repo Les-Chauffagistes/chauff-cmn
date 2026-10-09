@@ -265,7 +265,7 @@ class Pool(BaseModel):
         extra='forbid',
     )
     runtime: PoolRuntime
-    hashrate: PoolHashrates
+    hashrate: PoolHashrates | None = None
     shares: PoolShares
 
 
