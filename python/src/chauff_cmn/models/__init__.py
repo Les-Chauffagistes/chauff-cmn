@@ -69,8 +69,9 @@ class PoolBestRecord(BaseModel):
     )
     month: str
     sdiff: str
-    username: str
-    epoch: str
+    username: float
+    workername: str
+    epoch: float
 
 
 class Hashrates(BaseModel):

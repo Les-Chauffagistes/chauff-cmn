@@ -66,8 +66,9 @@ export interface components {
         PoolBestRecord: {
             month: string;
             sdiff: string;
-            username: string;
-            epoch: string;
+            username: number;
+            workername: string;
+            epoch: number;
         };
         Hashrates: {
             hashrate1m: string;

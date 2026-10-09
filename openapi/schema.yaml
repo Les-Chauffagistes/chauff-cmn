@@ -146,6 +146,7 @@ components:
         - month
         - sdiff
         - username
+        - workername
         - epoch
       properties:
         month:
@@ -153,9 +154,11 @@ components:
         sdiff:
           type: string
         username:
+          type: number
+        workername:
           type: string
         epoch:
-          type: string
+          type: number
     Hashrates:
       type: object
       additionalProperties: false
