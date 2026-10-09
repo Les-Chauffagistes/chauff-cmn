@@ -68,8 +68,8 @@ class PoolBestRecord(BaseModel):
         extra='forbid',
     )
     month: str
-    sdiff: str
-    username: float
+    sdiff: float
+    username: str
     workername: str
     epoch: float
 

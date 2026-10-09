@@ -152,9 +152,9 @@ components:
         month:
           type: string
         sdiff:
-          type: string
-        username:
           type: number
+        username:
+          type: string
         workername:
           type: string
         epoch:

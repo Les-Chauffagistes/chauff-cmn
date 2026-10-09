@@ -65,8 +65,8 @@ export interface components {
         };
         PoolBestRecord: {
             month: string;
-            sdiff: string;
-            username: number;
+            sdiff: number;
+            username: string;
             workername: string;
             epoch: number;
         };
