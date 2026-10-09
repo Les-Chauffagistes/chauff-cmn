@@ -121,7 +121,7 @@ components:
         users:
           type: object
           additionalProperties:
-            $ref: "#/components/schemas/User"
+            $ref: "#/components/schemas/PoolUser"
         repartition:
           type: object
           additionalProperties:

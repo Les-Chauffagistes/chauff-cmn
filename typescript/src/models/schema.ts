@@ -55,7 +55,7 @@ export interface components {
             backup_pool: boolean;
             pool: components["schemas"]["Pool"];
             users: {
-                [key: string]: components["schemas"]["User"];
+                [key: string]: components["schemas"]["PoolUser"];
             };
             repartition: {
                 [key: string]: components["schemas"]["Repartition"];

@@ -2,7 +2,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-datamodel-codegen \
+venv/bin/datamodel-codegen \
   --input openapi/schema.yaml \
   --input-file-type openapi \
   --output python/src/chauff_cmn/models/__init__.py \

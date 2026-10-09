@@ -283,7 +283,7 @@ class PoolUser(Hashrates):
 class PoolApiDataPayload(BaseModel):
     backup_pool: bool
     pool: Pool
-    users: dict[str, User]
+    users: dict[str, PoolUser]
     repartition: dict[str, Repartition]
     monthly_bests: list[PoolBestRecord]
     node: Node
