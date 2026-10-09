@@ -135,6 +135,21 @@ class PoolShares(BaseModel):
     SPS1h: float
 
 
+class PoolHost(BaseModel):
+    name: str
+    online: bool
+    latencyMs: float
+    raw: str
+
+
+class PoolPing(BaseModel):
+    updatedAt: str
+    total: int
+    online: int
+    offline: int
+    host: list[PoolHost]
+
+
 class Repartition(BaseModel):
     model_config = ConfigDict(
         extra='forbid',

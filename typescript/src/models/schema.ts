@@ -115,6 +115,20 @@ export interface components {
             SPS15m: number;
             SPS1h: number;
         };
+        PoolHost: {
+            name: string;
+            online: boolean;
+            latencyMs: number;
+            raw: string;
+        };
+        PoolPing: {
+            /** Format: datetime */
+            updatedAt: string;
+            total: number;
+            online: number;
+            offline: number;
+            host: components["schemas"]["PoolHost"][];
+        };
         Repartition: {
             shares: number;
             total_vardiff: number;
