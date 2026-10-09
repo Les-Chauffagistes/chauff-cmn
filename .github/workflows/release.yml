@@ -20,7 +20,7 @@ jobs:
       - run: uv build python
       - run: >
           uv tool run twine upload
-          --repository-url "http://172.16.0.3:8081/"
+          --repository-url "http://172.16.0.1:8081/"
           -u "${{ secrets.REGISTRY_USER }}"
           -p "${{ secrets.REGISTRY_PASSWORD }}"
           python/dist/*
@@ -43,7 +43,7 @@ jobs:
         run: |
           set -euo pipefail
           TOKEN=$(curl -s -u "${{ secrets.REGISTRY_USER }}:${{ secrets.REGISTRY_PASSWORD }}" \
-            -X PUT "http://172.16.0.3:4873/-/user/org.couchdb.user:${{ secrets.REGISTRY_USER }}" \
+            -X PUT "http://172.16.0.1:4873/-/user/org.couchdb.user:${{ secrets.REGISTRY_USER }}" \
             -H 'Content-Type: application/json' \
             -d "{\"name\":\"${{ secrets.REGISTRY_USER }}\",\"password\":\"${{ secrets.REGISTRY_PASSWORD }}\"}" \
             | node -pe "JSON.parse(require('fs').readFileSync(0, 'utf8')).token")
@@ -51,6 +51,6 @@ jobs:
             echo "Échec de l'authentification Verdaccio : pas de token reçu"
             exit 1
           fi
-          echo "//172.16.0.3:4873/:_authToken=${TOKEN}" > ~/.npmrc
-          echo "//172.16.0.3:4873/:always-auth=true" >> ~/.npmrc
-      - run: npm publish --registry "http://172.16.0.3:4873/"
+          echo "//172.16.0.1:4873/:_authToken=${TOKEN}" > ~/.npmrc
+          echo "//172.16.0.1:4873/:always-auth=true" >> ~/.npmrc
+      - run: npm publish --registry "http://172.16.0.1:4873/"
