@@ -187,6 +187,23 @@ class PoolStats(BaseModel):
     workers: list[Worker]
 
 
+class PoolTopHashrate(BaseModel):
+    address: str
+    workerCount: int
+    totalHashrate1hr: int
+
+
+class PoolTopBestShares(BaseModel):
+    address: str = Field(..., description='Valeur tronquée', examples=['bc1qq...5m'])
+    workerCount: int
+    bestshare: int
+
+
+class PoolTop(BaseModel):
+    topBestShares: list[PoolTopBestShares]
+    topHashrate: list[PoolTopHashrate]
+
+
 class BitcoinPrice(BaseModel):
     time: float
     USD: float

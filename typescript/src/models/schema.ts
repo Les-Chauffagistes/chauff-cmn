@@ -169,6 +169,24 @@ export interface components {
             };
             workers: components["schemas"]["Worker"][];
         };
+        PoolTopHashrate: {
+            address: string;
+            workerCount: number;
+            totalHashrate1hr: number;
+        };
+        PoolTopBestShares: {
+            /**
+             * @description Valeur tronquée
+             * @example bc1qq...5m
+             */
+            address: string;
+            workerCount: number;
+            bestshare: number;
+        };
+        PoolTop: {
+            topBestShares: components["schemas"]["PoolTopBestShares"][];
+            topHashrate: components["schemas"]["PoolTopHashrate"][];
+        };
         BitcoinPrice: {
             time: number;
             USD: number;
