@@ -223,7 +223,7 @@ components:
       properties:
         runtime:
           $ref: '#/components/schemas/PoolRuntime'
-        hashrate:
+        hashrates:
           $ref: '#/components/schemas/PoolHashrates'
         shares:
           $ref: '#/components/schemas/PoolShares'

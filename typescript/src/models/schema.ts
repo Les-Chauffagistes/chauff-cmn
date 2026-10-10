@@ -91,7 +91,7 @@ export interface components {
         };
         Pool: {
             runtime: components["schemas"]["PoolRuntime"];
-            hashrate?: components["schemas"]["PoolHashrates"];
+            hashrates: components["schemas"]["PoolHashrates"];
             shares: components["schemas"]["PoolShares"];
         };
         PoolHashrates: components["schemas"]["Hashrates"] & {
