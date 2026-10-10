@@ -276,7 +276,7 @@ class PoolUser(Hashrates):
     shares: float
     bestshare: float
     bestever: float
-    authorized: float
+    authorised: float
     worker: list[Worker]
 
 

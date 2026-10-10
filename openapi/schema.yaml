@@ -357,7 +357,7 @@ components:
             - shares
             - bestshare
             - bestever
-            - authorized
+            - authorised
             - worker
           properties:
             lastshare:
@@ -370,7 +370,7 @@ components:
               type: number
             bestever:
               type: number
-            authorized:
+            authorised:
               type: number
             worker:
               type: array

@@ -142,7 +142,7 @@ export interface components {
             shares: number;
             bestshare: number;
             bestever: number;
-            authorized: number;
+            authorised: number;
             worker: components["schemas"]["Worker"][];
         };
         Worker: components["schemas"]["Hashrates"] & {
