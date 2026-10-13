@@ -104,6 +104,11 @@ export interface components {
             hashrate15m: string;
             hashrate6hr: string;
         };
+        PoolHashrateRecord: {
+            /** Format: datetime */
+            date: string;
+            hashrate: number;
+        };
         PoolRuntime: {
             runtime: number;
             lastupdate: number;

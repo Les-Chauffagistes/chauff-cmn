@@ -117,6 +117,11 @@ class PoolHashrates(Hashrates):
     hashrate6hr: str
 
 
+class PoolHashrateRecord(BaseModel):
+    date: str
+    hashrate: int
+
+
 class PoolRuntime(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
