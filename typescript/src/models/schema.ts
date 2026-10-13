@@ -63,6 +63,12 @@ export interface components {
             monthly_bests: components["schemas"]["PoolBestRecord"][];
             node: components["schemas"]["Node"];
         };
+        PoolPrivateBestRecord: {
+            month: string;
+            sdiff: number;
+            address: string;
+            epoch: number;
+        };
         PoolBestRecord: {
             month: string;
             sdiff: number;

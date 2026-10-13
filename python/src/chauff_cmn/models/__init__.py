@@ -63,6 +63,13 @@ class Subscription(BaseModel):
     updated_at: AwareDatetime
 
 
+class PoolPrivateBestRecord(BaseModel):
+    month: str
+    sdiff: float
+    address: str
+    epoch: float
+
+
 class PoolBestRecord(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
