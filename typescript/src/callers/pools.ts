@@ -19,7 +19,7 @@ export class PoolAPIClient {
   }
 
   async getPoolShareDistribution(address: string): Promise<components["schemas"]["PoolDistributionElement"][]> {
-    return await fetch(`${this.apiUrl}/v1/stats/${address}/shareDistribution`).then((res) => res.json());
+    return await fetch(`${this.apiUrl}/v1/distribution/${address}`).then((res) => res.json());
   }
 
 
