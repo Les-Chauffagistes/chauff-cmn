@@ -292,6 +292,18 @@ export interface components {
             /** @example false */
             parse_error: boolean;
         };
+        PoolWebsocketWatermarkElement: {
+            /**
+             * @default watermark
+             * @example watermark
+             */
+            type: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-21T12:20:51.262066+00:00
+             */
+            watermark: string;
+        };
     };
     responses: never;
     parameters: never;

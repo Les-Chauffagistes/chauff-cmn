@@ -714,3 +714,17 @@ components:
         - sdiff
         - result
         - parse_error
+    PoolWebsocketWatermarkElement:
+      type: object
+      properties:
+        type:
+          type: string
+          example: watermark
+          default: watermark
+        watermark:
+          type: string
+          format: date-time
+          example: 2026-10-21T12:20:51.262066+00:00
+      required:
+        - type
+        - watermark

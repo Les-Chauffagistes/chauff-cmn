@@ -309,6 +309,11 @@ class PoolWebsocketShareElement(BaseModel):
     parse_error: bool = Field(..., examples=[False])
 
 
+class PoolWebsocketWatermarkElement(BaseModel):
+    type: str = Field(..., examples=['watermark'])
+    watermark: AwareDatetime = Field(..., examples=['2026-10-21T12:20:51.262066+00:00'])
+
+
 class Pool(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
