@@ -249,6 +249,49 @@ export interface components {
             shares_ok: number;
             shares_ko: number;
         };
+        PoolWebsocketShareElement: {
+            /** @default share */
+            type: string;
+            /** @example debian:000ed6bd/6ab2eef0000145f3.sharelog:1923, */
+            share_id: string;
+            /** @example 1 */
+            epoch: number;
+            /** @example 20773258 */
+            seq: number;
+            /**
+             * @description The instance name of the pool server where the share was submitted
+             * @example debian
+             */
+            instance: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-21T12:20:51.262066+00:00
+             */
+            created_at: string;
+            /** @example 7688470228434503000 */
+            workinfoid: number;
+            /**
+             * @description The bitcoin address
+             * @example bc1qqp9zq4an6nyzhcspz2xfmkcf8rj0p6w94a5gyeu2a7rghxjhnqqsvymz5m
+             */
+            username: string;
+            /**
+             * @description The worker name, including the username
+             * @example bc1qqp9zq4an6nyzhcspz2xfmkcf8rj0p6w94a5gyeu2a7rghxjhnqqsvymz5m.Heatman
+             */
+            workername: string;
+            /** @example 1000 */
+            diff: number;
+            /** @example 2026986.9233135832 */
+            sdiff: number;
+            /**
+             * @description If the share is valid and accepted
+             * @example true
+             */
+            result: boolean;
+            /** @example false */
+            parse_error: boolean;
+        };
     };
     responses: never;
     parameters: never;

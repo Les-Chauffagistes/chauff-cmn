@@ -273,6 +273,42 @@ class PoolDistributionElement(BaseModel):
     shares_ko: float
 
 
+class PoolWebsocketShareElement(BaseModel):
+    type: str
+    share_id: str = Field(
+        ..., examples=['debian:000ed6bd/6ab2eef0000145f3.sharelog:1923,']
+    )
+    epoch: int = Field(..., examples=[1])
+    seq: int = Field(..., examples=[20773258])
+    instance: str = Field(
+        ...,
+        description='The instance name of the pool server where the share was submitted',
+        examples=['debian'],
+    )
+    created_at: AwareDatetime = Field(
+        ..., examples=['2026-10-21T12:20:51.262066+00:00']
+    )
+    workinfoid: int = Field(..., examples=[7688470228434503155])
+    username: str = Field(
+        ...,
+        description='The bitcoin address',
+        examples=['bc1qqp9zq4an6nyzhcspz2xfmkcf8rj0p6w94a5gyeu2a7rghxjhnqqsvymz5m'],
+    )
+    workername: str = Field(
+        ...,
+        description='The worker name, including the username',
+        examples=[
+            'bc1qqp9zq4an6nyzhcspz2xfmkcf8rj0p6w94a5gyeu2a7rghxjhnqqsvymz5m.Heatman'
+        ],
+    )
+    diff: float = Field(..., examples=[1000.0])
+    sdiff: float = Field(..., examples=[2026986.9233135832])
+    result: bool = Field(
+        ..., description='If the share is valid and accepted', examples=[True]
+    )
+    parse_error: bool = Field(..., examples=[False])
+
+
 class Pool(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
