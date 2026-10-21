@@ -711,6 +711,7 @@ components:
         - instance
         - created_at
         - workinfoid
+        - block_height
         - username
         - workername
         - diff

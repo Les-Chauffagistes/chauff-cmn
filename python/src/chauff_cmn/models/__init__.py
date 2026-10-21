@@ -289,7 +289,7 @@ class PoolWebsocketShareElement(BaseModel):
         ..., examples=['2026-10-21T12:20:51.262066+00:00']
     )
     workinfoid: int = Field(..., examples=[7688470228434503155])
-    block_height: int | None = Field(None, examples=[972480])
+    block_height: int = Field(..., examples=[972480])
     username: str = Field(
         ...,
         description='The bitcoin address',
