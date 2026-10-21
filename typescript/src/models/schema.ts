@@ -270,6 +270,8 @@ export interface components {
             created_at: string;
             /** @example 7688470228434503000 */
             workinfoid: number;
+            /** @example 972480 */
+            block_height?: number;
             /**
              * @description The bitcoin address
              * @example bc1qqp9zq4an6nyzhcspz2xfmkcf8rj0p6w94a5gyeu2a7rghxjhnqqsvymz5m

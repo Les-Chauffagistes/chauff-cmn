@@ -679,6 +679,9 @@ components:
         workinfoid:
           type: integer
           example: 7688470228434503155
+        block_height:
+          type: integer
+          example: 972480
         username:
           type: string
           description: The bitcoin address
