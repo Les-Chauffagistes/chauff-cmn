@@ -31,4 +31,4 @@ class PoolAPIClient:
         return PoolDistributionElement(**await self._get(f"/v1/share_distribution/{address}"))
 
     async def get_cluster(self):
-        return await PoolApiDataPayload(**self._authenticated_get("/v1/data"))
+        return PoolApiDataPayload(**await self._authenticated_get("/v1/data"))
