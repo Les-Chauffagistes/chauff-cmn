@@ -653,6 +653,25 @@ components:
         - part
         - shares_ko
         - shares_ok
+    PoolDistributionAtElement:
+      type: object
+      description: >-
+        Part d'un worker dans la répartition d'une pool à une date donnée
+        (history-server, GET /v1/{address}/distribution?at=). Les parts sont des
+        fractions 0-1 dont la somme vaut 1.
+      properties:
+        workername:
+          type: string
+        part:
+          type: number
+          description: Fraction 0-1 du travail de la pool (somme = 1).
+        sampled_at:
+          type: string
+          description: Date ISO 8601 de l'échantillon utilisé (dernier échantillon <= at).
+      required:
+        - workername
+        - part
+        - sampled_at
     PoolWebsocketShareElement:
       type: object
       properties:

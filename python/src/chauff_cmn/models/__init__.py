@@ -273,6 +273,21 @@ class PoolDistributionElement(BaseModel):
     shares_ko: float
 
 
+class PoolDistributionAtElement(BaseModel):
+    """
+    Part d'un worker dans la répartition d'une pool à une date donnée (history-server, GET /v1/{address}/distribution?at=). Les parts sont des fractions 0-1 dont la somme vaut 1.
+    """
+
+    workername: str
+    part: float = Field(
+        ..., description='Fraction 0-1 du travail de la pool (somme = 1).'
+    )
+    sampled_at: str = Field(
+        ...,
+        description="Date ISO 8601 de l'échantillon utilisé (dernier échantillon <= at).",
+    )
+
+
 class PoolWebsocketShareElement(BaseModel):
     type: str
     share_id: str = Field(

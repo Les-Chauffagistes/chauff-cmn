@@ -9,7 +9,15 @@ deux a changé.
 
 ## [Unreleased]
 
+## [0.4.25] - 2026-11-06
+
 ### Added
+- Schéma `PoolDistributionAtElement` (`{workername, part, sampled_at}`, parts = fractions 0-1
+  de somme 1) et TypeScript `HistoryAPIClient.getPoolDistributionAt(poolAddress, at)`
+  (history-server `GET /v1/{address}/distribution?at=`).
+- TypeScript : `BitcoinAPIClient.getBtcBlockReward(at?)` accepte une hauteur (`number`) ou une
+  date ISO 8601 (`string`/`Date`) pour obtenir la subsidy du block correspondant ; sans paramètre,
+  comportement inchangé. Nécessite la version de bitcoin-service qui supporte `?height=`/`?at=`.
 - TypeScript : nouveau point d'entrée `@chauffagistes/cmn/ui` (`Navbar`,
   `Footer`) — composants React génériques, pilotés par props (aucune route ni
   URL en dur), extraits de pool-site où ils avaient été dupliqués à

@@ -249,6 +249,14 @@ export interface components {
             shares_ok: number;
             shares_ko: number;
         };
+        /** @description Part d'un worker dans la répartition d'une pool à une date donnée (history-server, GET /v1/{address}/distribution?at=). Les parts sont des fractions 0-1 dont la somme vaut 1. */
+        PoolDistributionAtElement: {
+            workername: string;
+            /** @description Fraction 0-1 du travail de la pool (somme = 1). */
+            part: number;
+            /** @description Date ISO 8601 de l'échantillon utilisé (dernier échantillon <= at). */
+            sampled_at: string;
+        };
         PoolWebsocketShareElement: {
             /** @default share */
             type: string;
