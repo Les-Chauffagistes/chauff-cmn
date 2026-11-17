@@ -5,7 +5,7 @@ dépendances core de chauff_cmn) : ne parle qu'au protocole ASGI.
 """
 
 import time
-from typing import Any, Awaitable, Callable, MutableMapping
+from typing import Any, Awaitable, Callable, Iterable, MutableMapping
 
 from opentelemetry import trace
 from opentelemetry.propagate import extract
@@ -25,11 +25,13 @@ _tracer = trace.get_tracer(__name__)
 
 
 class RequestLoggingMiddleware:
-    def __init__(self, app: App) -> None:
+    def __init__(self, app: App, exclude_paths: Iterable[str] = ()) -> None:
         self.app = app
+        # Chemins exacts ni loggués ni tracés (healthchecks appelés en boucle).
+        self.exclude_paths = frozenset(exclude_paths)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] != "http":
+        if scope["type"] != "http" or scope.get("path") in self.exclude_paths:
             await self.app(scope, receive, send)
             return
 

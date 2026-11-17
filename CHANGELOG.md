@@ -9,6 +9,18 @@ deux a changé.
 
 ## [Unreleased]
 
+### Added
+- Python : `configure(..., intercept_stdlib=True)` redirige le `logging` de la stdlib (code en
+  `logging.getLogger(__name__)`, uvicorn, asyncpg, httpx...) vers loguru, donc vers le même JSON.
+  Désactivé par défaut. Les handlers propres d'uvicorn sont retirés.
+- Python : `RequestLoggingMiddleware(app, exclude_paths=[...])` et
+  `make_request_logging_middleware(exclude_paths=[...])` (aiohttp) : les chemins exacts listés
+  (ex. `/health`) ne sont ni loggués ni tracés. `request_logging_middleware` reste inchangé.
+
+### Fixed
+- Python : le champ JSON `exception` contient désormais le traceback complet au lieu du repr
+  du `RecordException`.
+
 ## [0.4.25] - 2026-11-06
 
 ### Added

@@ -107,3 +107,16 @@ async def test_trace_id_reaches_logs_emitted_deep_inside_the_handler(capsys, spa
     business_line = next(p for p in lines if p["message"] == "logique métier en cours")
 
     assert business_line["trace_id"] == "4bf92f3577b34da6a3ce929d0e0e4736"
+
+
+async def test_excluded_path_is_neither_logged_nor_traced(capsys, spans):
+    configure(service="test-service", level="INFO")
+    app = RequestLoggingMiddleware(_app, exclude_paths=["/health"])
+
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/health")
+
+    assert resp.status_code == 200
+    assert capsys.readouterr().out == ""
+    assert spans.get_finished_spans() == ()

@@ -1,7 +1,7 @@
 """Middleware de log de requêtes pour aiohttp. Nécessite `aiohttp` (extra `aiohttp`)."""
 
 import time
-from typing import Awaitable, Callable
+from typing import Awaitable, Callable, Iterable
 
 from aiohttp.web import HTTPException, Request, StreamResponse, middleware
 from opentelemetry import trace
@@ -10,13 +10,28 @@ from opentelemetry.trace import SpanKind, Status, StatusCode
 
 from . import logger
 
-__all__ = ["request_logging_middleware"]
+__all__ = ["request_logging_middleware", "make_request_logging_middleware"]
 
 _tracer = trace.get_tracer(__name__)
 
 
-@middleware
-async def request_logging_middleware(
+def make_request_logging_middleware(exclude_paths: Iterable[str] = ()):
+    """Variante configurable de `request_logging_middleware` : les chemins exacts de `exclude_paths`
+    (healthchecks appelés en boucle) ne sont ni loggués ni tracés."""
+    excluded = frozenset(exclude_paths)
+
+    @middleware
+    async def request_logging(
+        request: Request, handler: Callable[[Request], Awaitable[StreamResponse]]
+    ) -> StreamResponse:
+        if request.path in excluded:
+            return await handler(request)
+        return await _log_request(request, handler)
+
+    return request_logging
+
+
+async def _log_request(
     request: Request, handler: Callable[[Request], Awaitable[StreamResponse]]
 ) -> StreamResponse:
     # Continue le trace du `traceparent` entrant s'il est valide, sinon
@@ -55,3 +70,6 @@ async def request_logging_middleware(
                 status=status,
                 duration_ms=duration_ms,
             ).info("requête traitée")
+
+
+request_logging_middleware = make_request_logging_middleware()
