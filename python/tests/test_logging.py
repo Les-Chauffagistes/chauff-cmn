@@ -88,3 +88,16 @@ def test_intercept_stdlib_keeps_exc_info_and_takes_over_uvicorn(capsys):
     lines = [json.loads(line) for line in capsys.readouterr().out.strip().splitlines()]
     assert "ZeroDivisionError" in lines[-2]["exception"]
     assert lines[-1]["message"] == "Started"
+
+
+def test_intercept_stdlib_keeps_a_silenced_uvicorn_access_logger_silent(capsys):
+    import logging
+
+    access = logging.getLogger("uvicorn.access")
+    access.handlers.clear()
+    access.propagate = False  # état posé par uvicorn avec --no-access-log
+
+    configure(service="test-service", level="INFO", intercept_stdlib=True)
+    access.info('GET /x 200')
+
+    assert capsys.readouterr().out == ""

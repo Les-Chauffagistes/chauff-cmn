@@ -41,11 +41,13 @@ class _InterceptHandler(logging.Handler):
 def _intercept_stdlib() -> None:
     logging.basicConfig(handlers=[_InterceptHandler()], level=0, force=True)
     # uvicorn pose ses propres handlers et coupe la propagation : on les retire pour que tout
-    # passe par le root logger (donc par loguru).
+    # passe par le root logger (donc par loguru). Un logger sans handler (ex. `uvicorn.access`
+    # sous `--no-access-log`) est laissé tel quel pour que l'extinction voulue reste effective.
     for name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
         stdlib_logger = logging.getLogger(name)
-        stdlib_logger.handlers.clear()
-        stdlib_logger.propagate = True
+        if stdlib_logger.handlers:
+            stdlib_logger.handlers.clear()
+            stdlib_logger.propagate = True
 
 
 def _inject_trace_context(record: Any) -> None:
