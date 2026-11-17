@@ -1,5 +1,7 @@
 import json
+import logging
 import sys
+import traceback
 from typing import Any
 
 from loguru import logger
@@ -8,11 +10,44 @@ from opentelemetry import trace
 __all__ = ["logger", "configure"]
 
 
-def configure(service: str, level: str = "INFO") -> None:
+def configure(service: str, level: str = "INFO", intercept_stdlib: bool = False) -> None:
     # Existing `logger.info(...)` call sites keep working unchanged once the import switches to chauff_cmn.logging.
     logger.remove()
     logger.configure(patcher=_inject_trace_context)
     logger.add(_make_sink(service), level=level)
+    if intercept_stdlib:
+        _intercept_stdlib()
+
+
+class _InterceptHandler(logging.Handler):
+    # Redirige les records de la stdlib vers loguru, pour que le code en `logging.getLogger(__name__)`
+    # (et les libs tierces : uvicorn, asyncpg, httpx...) sorte le même JSON que le reste.
+    def emit(self, record: logging.LogRecord) -> None:
+        try:
+            level: str | int = logger.level(record.levelname).name
+        except ValueError:
+            level = record.levelno
+
+        # Remonte au-delà des frames du module logging pour que module/function/line
+        # désignent l'appelant d'origine et non ce handler.
+        frame, depth = sys._getframe(), 0
+        while frame and (depth == 0 or frame.f_code.co_filename == logging.__file__):
+            frame = frame.f_back
+            depth += 1
+
+        logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
+
+
+def _intercept_stdlib() -> None:
+    logging.basicConfig(handlers=[_InterceptHandler()], level=0, force=True)
+    # uvicorn pose ses propres handlers et coupe la propagation : on les retire pour que tout
+    # passe par le root logger (donc par loguru). Un logger sans handler (ex. `uvicorn.access`
+    # sous `--no-access-log`) est laissé tel quel pour que l'extinction voulue reste effective.
+    for name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
+        stdlib_logger = logging.getLogger(name)
+        if stdlib_logger.handlers:
+            stdlib_logger.handlers.clear()
+            stdlib_logger.propagate = True
 
 
 def _inject_trace_context(record: Any) -> None:
@@ -48,7 +83,8 @@ def _make_sink(service: str):
         # une clé JSON top-level plutôt que de rester coincé dans "message".
         payload.update({k: v for k, v in record["extra"].items() if k not in ("trace_id", "span_id")})
         if record["exception"] is not None:
-            payload["exception"] = str(record["exception"])
+            exc = record["exception"]
+            payload["exception"] = "".join(traceback.format_exception(exc.type, exc.value, exc.traceback)).rstrip()
         sys.stdout.write(json.dumps(payload, default=str) + "\n")
 
     return sink

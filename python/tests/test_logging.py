@@ -43,3 +43,61 @@ def test_explicit_bind_wins_over_the_active_span(capsys):
 
     payload = json.loads(capsys.readouterr().out.strip().splitlines()[-1])
     assert payload["trace_id"] == "4bf92f3577b34da6a3ce929d0e0e4736"
+
+
+def test_exception_field_contains_the_traceback(capsys):
+    configure(service="test-service", level="INFO")
+
+    try:
+        1 / 0
+    except ZeroDivisionError:
+        logger.exception("boom")
+
+    payload = json.loads(capsys.readouterr().out.strip().splitlines()[-1])
+    assert "Traceback (most recent call last)" in payload["exception"]
+    assert "ZeroDivisionError: division by zero" in payload["exception"]
+
+
+def test_intercept_stdlib_routes_stdlib_records_to_json(capsys):
+    import logging
+
+    configure(service="test-service", level="INFO", intercept_stdlib=True)
+    logging.getLogger("some.lib").warning("valeur %s", 42)
+
+    payload = json.loads(capsys.readouterr().out.strip().splitlines()[-1])
+    assert payload["level"] == "WARNING"
+    assert payload["message"] == "valeur 42"
+    assert payload["function"] == "test_intercept_stdlib_routes_stdlib_records_to_json"
+    assert payload["module"] == "test_logging"
+
+
+def test_intercept_stdlib_keeps_exc_info_and_takes_over_uvicorn(capsys):
+    import logging
+
+    uvicorn_logger = logging.getLogger("uvicorn.error")
+    uvicorn_logger.addHandler(logging.StreamHandler())
+    uvicorn_logger.propagate = False
+
+    configure(service="test-service", level="INFO", intercept_stdlib=True)
+    try:
+        1 / 0
+    except ZeroDivisionError:
+        logging.getLogger("some.lib").exception("échec")
+    uvicorn_logger.info("Started")
+
+    lines = [json.loads(line) for line in capsys.readouterr().out.strip().splitlines()]
+    assert "ZeroDivisionError" in lines[-2]["exception"]
+    assert lines[-1]["message"] == "Started"
+
+
+def test_intercept_stdlib_keeps_a_silenced_uvicorn_access_logger_silent(capsys):
+    import logging
+
+    access = logging.getLogger("uvicorn.access")
+    access.handlers.clear()
+    access.propagate = False  # état posé par uvicorn avec --no-access-log
+
+    configure(service="test-service", level="INFO", intercept_stdlib=True)
+    access.info('GET /x 200')
+
+    assert capsys.readouterr().out == ""

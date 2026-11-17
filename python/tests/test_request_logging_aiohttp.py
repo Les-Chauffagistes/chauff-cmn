@@ -127,3 +127,21 @@ async def test_trace_id_reaches_logs_emitted_deep_inside_the_handler(capsys, spa
     business_line = next(p for p in lines if p["message"] == "logique métier en cours")
 
     assert business_line["trace_id"] == "4bf92f3577b34da6a3ce929d0e0e4736"
+
+
+async def test_excluded_path_is_neither_logged_nor_traced(capsys, spans):
+    from chauff_cmn.logging.aiohttp import make_request_logging_middleware
+
+    configure(service="test-service", level="INFO")
+
+    async def handler(request: web.Request) -> web.Response:
+        return web.json_response({"ok": True})
+
+    app = web.Application(middlewares=(make_request_logging_middleware(exclude_paths=["/health"]),))
+    app.router.add_get("/health", handler)
+    async with TestClient(TestServer(app)) as client:
+        resp = await client.get("/health")
+        assert resp.status == 200
+
+    assert capsys.readouterr().out == ""
+    assert spans.get_finished_spans() == ()
